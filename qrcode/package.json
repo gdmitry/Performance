@@ -25,7 +25,8 @@
     "opn": "^1.0.0",
     "psi": "^0.1.6",
     "require-dir": "^0.1.0",
-    "run-sequence": "^1.0.2"
+    "run-sequence": "^1.0.2",
+    "shared-git-hooks": "^1.2.1"
   },
   "engines": {
     "node": ">=0.10.0"
