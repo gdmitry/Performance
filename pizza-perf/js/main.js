@@ -283,7 +283,7 @@ function getNoun(y) {
     }
     ;
 };
-var windowwidth;
+var windowwidth, movers;
 var adjectives = ["dark", "color", "whimsical", "shiny", "noise", "apocalyptic", "insulting", "praise", "scientific"];  // types of adjectives for pizza titles
 var nouns = ["animals", "everyday", "fantasy", "gross", "horror", "jewelry", "places", "scifi"];                        // types of nouns for pizza titles
 
@@ -500,11 +500,12 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 function updatePositions() {
     frame++;
     window.performance.mark("mark_start_frame");
+    var scrolling = document.body.scrollTop;
 
-    var items = document.querySelectorAll('.mover');
-    for (var i = 0; i < items.length; i++) {
-        var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
-        items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
+    // var items = document.querySelectorAll('.mover');
+    for (var i = 0; i < movers.length; i++) {
+        var phase = Math.sin((frame * 100 / 1250) + (i % 5));
+        movers[i].style.left = movers[i].basicLeft + 100 * phase + 'px';
     }
 
     // User Timing API to the rescue again. Seriously, it's worth learning.
@@ -518,7 +519,7 @@ function updatePositions() {
 }
 
 // runs updatePositions on scroll
-window.addEventListener('scroll', updatePositions);
+window.addEventListener('scroll', throttle(updatePositions, 100));
 
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function () {
@@ -534,6 +535,22 @@ document.addEventListener('DOMContentLoaded', function () {
         elem.style.top = (Math.floor(i / cols) * s) + 'px';
         document.querySelector("#movingPizzas1").appendChild(elem);
     }
-    updatePositions();
+
     windowwidth = document.querySelector("#randomPizzas").offsetWidth;
+    movers = document.querySelectorAll('.mover');
+    updatePositions();
 });
+
+
+function throttle(callback, limit) {
+    var wait = false;                 // Initially, we're not waiting
+    return function () {              // We return a throttled function
+        if (!wait) {                  // If we're not waiting
+            callback.call();          // Execute users function
+            wait = true;              // Prevent future invocations
+            setTimeout(function () {  // After a period of time
+                wait = false;         // And allow future invocations
+            }, limit);
+        }
+    }
+}
