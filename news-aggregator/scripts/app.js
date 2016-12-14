@@ -215,11 +215,7 @@ APP.Main = (function () {
         main.classList.remove('loading');
     });
 
-    main.addEventListener('scroll', function (e) {
-        var target = e.target;
-        var scrollTop = target.scrollTop;
-        var offsetHeight = target.offsetHeight;
-        var scrollHeight = target.scrollHeight;
+    main.addEventListener('scroll', function () {
         var header = $('header');
         var headerTitles = header.querySelector('.header__title-wrapper');
         var scrollTopCapped = Math.min(70, main.scrollTop);
