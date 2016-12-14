@@ -72,12 +72,6 @@ APP.Main = (function () {
 
         // Tick down. When zero we can batch in the next load.
         storyLoadCount--;
-
-        // // Colorize on complete.
-        // if (storyLoadCount === 0) {
-        //     // colorizeAndScaleStories();
-        //     requestAnimationFrame(colorizeAndScaleStories);
-        // }
     }
 
     var storyDetails;
@@ -149,8 +143,6 @@ APP.Main = (function () {
 
     function toggleHistory(id) {
         var storyDetails = $('#sd-' + id);
-        document.body.classList.toggle("details-active", !inDetails);
-
         (function (inDetails) {
             requestAnimationFrame(function () {
                 storyDetails.classList.toggle('show', !inDetails);
@@ -223,16 +215,11 @@ APP.Main = (function () {
         main.classList.remove('loading');
     });
 
-
-    // main.addEventListener('touchstart', function (evt) {
-    //     // I just wanted to test what happens if touchstart
-    //     // gets canceled. Hope it doesn't block scrolling on mobiles...
-    //     if (Math.random() > 0.97) {
-    //         evt.preventDefault();
-    //     }
-    // });
-
-    main.addEventListener('scroll', function () {
+    main.addEventListener('scroll', function (e) {
+        var target = e.target;
+        var scrollTop = target.scrollTop;
+        var offsetHeight = target.offsetHeight;
+        var scrollHeight = target.scrollHeight;
         var header = $('header');
         var headerTitles = header.querySelector('.header__title-wrapper');
         var scrollTopCapped = Math.min(70, main.scrollTop);
@@ -242,13 +229,12 @@ APP.Main = (function () {
         header.style.height = (156 - scrollTopCapped) + 'px';
         headerTitles.style.transform = scaleString;
 
-        // Add a shadow to the header.
+        // // Add a shadow to the header.
         header.classList.toggle('raised', main.scrollTop > 70);
         // Check if we need to load the next batch of stories.
-        var loadThreshold = (main.scrollHeight - main.offsetHeight -
-        LAZY_LOAD_THRESHOLD);
+        var loadThreshold = (scrollHeight - offsetHeight - LAZY_LOAD_THRESHOLD);
 
-        if (main.scrollTop > loadThreshold) {
+        if (scrollTop > loadThreshold) {
             loadStoryBatch();
         }
     });
