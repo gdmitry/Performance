@@ -235,7 +235,6 @@ main.loading {
     overflow: hidden;
     transition: transform 0.3s ease-out 0.06s;
     transform: translate(100%, 0);
-    will-change: transform;
 }
 
 .story-details.show {
@@ -252,9 +251,6 @@ main.loading {
     -webkit-overflow-scrolling: touch;
 
     padding: 0 16px 72px 72px;
-
-    transform: translate(0, 0);
-    will-change: transform;
 }
 
 .story-details__title {

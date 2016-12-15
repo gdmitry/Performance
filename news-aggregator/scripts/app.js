@@ -109,7 +109,6 @@ APP.Main = (function () {
         storyContent.style.paddingTop = headerHeight + 'px';
 
         renderComments(details.kids, commentsElement);
-
         toggleHistory(details.id);
     }
 
@@ -130,58 +129,25 @@ APP.Main = (function () {
             commentsElement.appendChild(comment);
 
             // Update the comment with the live data.
-            APP.Data.getStoryComment(kids[k], function (commentDetails) {
-                commentDetails.time *= 1000;
-                var comment = commentsElement.querySelector(
-                    '#sdc-' + commentDetails.id);
-                comment.innerHTML = storyDetailsCommentTemplate(
-                    commentDetails,
-                    localeData);
-            });
+            (function (kids, k) {
+                requestAnimationFrame(function () {
+                    APP.Data.getStoryComment(kids[k], function (commentDetails) {
+                        commentDetails.time *= 1000;
+                        var comment = commentsElement.querySelector(
+                            '#sdc-' + commentDetails.id);
+                        comment.innerHTML = storyDetailsCommentTemplate(
+                            commentDetails,
+                            localeData);
+                    });
+                });
+            })(kids, k);
         }
     }
 
     function toggleHistory(id) {
         var storyDetails = $('#sd-' + id);
-        (function (inDetails) {
-            requestAnimationFrame(function () {
-                storyDetails.classList.toggle('show', !inDetails);
-            });
-        })(inDetails);
+        storyDetails.classList.toggle('show', !inDetails);
         inDetails = !inDetails;
-    }
-
-    /**
-     * Does this really add anything? Can we do this kind
-     * of work in a cheaper way?
-     */
-    function colorizeAndScaleStories() {
-        var storyElements = document.querySelectorAll('.story');
-
-        for (var s = 0; s < storyElements.length; s++) {
-
-            var story = storyElements[s];
-            var score = story.querySelector('.story__score');
-            var title = story.querySelector('.story__title');
-
-            // Base the scale on the y position of the score.
-            var height = main.offsetHeight;
-            var scoreLocation = score.getBoundingClientRect().top -
-                document.body.getBoundingClientRect().top;
-            var scale = Math.min(1, 1 - (0.05 * ((scoreLocation - 170) / height)));
-            var opacity = Math.min(1, 1 - (0.5 * ((scoreLocation - 170) / height)));
-
-            score.style.width = (scale * 40) + 'px';
-            score.style.height = (scale * 40) + 'px';
-            score.style.lineHeight = (scale * 40) + 'px';
-
-            // Now figure out how wide it is and use that to saturate it.
-            scoreLocation = score.getBoundingClientRect();
-            var saturation = (100 * ((scoreLocation.width - 38) / 2));
-
-            score.style.backgroundColor = 'hsl(42, ' + saturation + '%, 50%)';
-            title.style.opacity = opacity;
-        }
     }
 
     function loadStoryBatch() {
@@ -215,23 +181,27 @@ APP.Main = (function () {
         main.classList.remove('loading');
     });
 
-    main.addEventListener('scroll', function () {
-        var header = $('header');
-        var headerTitles = header.querySelector('.header__title-wrapper');
-        var scrollTopCapped = Math.min(70, main.scrollTop);
+    var header = $('header');
+    var headerTitles = header.querySelector('.header__title-wrapper');
+
+    main.addEventListener('scroll', function (evt) {
+        var scrollHeight = evt.target.scrollHeight;
+        var offsetHeight = evt.target.offsetHeight;
+        var scrollTop = evt.target.scrollTop;
+
+        var scrollTopCapped = Math.min(70, scrollTop);
         var scaleString = 'scale(' + (1 - (scrollTopCapped / 300)) + ')';
 
-        //colorizeAndScaleStories();
         header.style.height = (156 - scrollTopCapped) + 'px';
         headerTitles.style.transform = scaleString;
 
         // // Add a shadow to the header.
-        header.classList.toggle('raised', main.scrollTop > 70);
+        header.classList.toggle('raised', scrollTop > 70);
         // Check if we need to load the next batch of stories.
         var loadThreshold = (scrollHeight - offsetHeight - LAZY_LOAD_THRESHOLD);
 
         if (scrollTop > loadThreshold) {
-            loadStoryBatch();
+            requestAnimationFrame(loadStoryBatch);
         }
     });
 
